@@ -1,4 +1,4 @@
-# Benchmark Rust EVM
+# Benchmark Rust EVM and REVM
 
 
 
@@ -14,11 +14,11 @@ For each EVM,
 * micro bench the `add(0xc7)` method for 5 seconds
 
 
-Sample results:
+Sample results on Thinkpad X13 Gen1:
 
 ``` text
-execute_contract_method_success_from_revm (5.0s) ...       8_573.829 ns/iter (0.999 R²)
-execute_contract_method_reverted_from_revm (5.0s) ...       8_188.534 ns/iter (0.999 R²)
-execute_contract_method_success_from_rust_evm (5.0s) ...       8_419.229 ns/iter (0.999 R²)
-execute_contract_method_reverted_from_rust_evm (5.0s) ...       7_759.615 ns/iter (0.995 R²)
+execute_contract_method_success_from_rust_evm (5.0s) ...       9_431.962 ns/iter (0.999 R²)
+execute_contract_method_reverted_from_rust_evm (5.0s) ...       7_720.943 ns/iter (1.000 R²)
+execute_contract_method_success_from_revm (5.0s) ...       8_617.185 ns/iter (1.000 R²)
+execute_contract_method_reverted_from_revm (5.0s) ...       8_594.083 ns/iter (0.999 R²)
 ```

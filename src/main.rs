@@ -171,6 +171,6 @@ fn bench_revm() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    bench_revm()?;
-    bench_rust_evm()
+    bench_rust_evm()?;
+    bench_revm()
 }
