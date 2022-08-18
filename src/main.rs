@@ -1,5 +1,3 @@
-#![feature(assert_matches)]
-
 use bytes::Bytes;
 use evm::backend::{MemoryAccount, MemoryBackend, MemoryVicinity};
 use evm::executor::stack::{MemoryStackState, StackExecutor, StackSubstateMetadata};
@@ -8,7 +6,6 @@ use eyre::Result;
 use microbench::{self, Options};
 use primitive_types::{H160, U256};
 use revm::{AccountInfo, Bytecode, InMemoryDB, Return, TransactTo};
-use std::assert_matches::assert_matches;
 use std::collections::BTreeMap;
 use std::str::FromStr;
 
@@ -21,7 +18,7 @@ const CONTRACT_BIN: &str = "608060405234801561001057600080fd5b506004361061002b57
 const METHOD_SUCCESS_BIN: &str =
     "02067e6a0000000000000000000000000000000000000000000000000000000000000001";
 
-/// sample.sol: add(0xee)
+/// sample.sol: add(0xc7)
 const METHOD_REVERT_BIN: &str =
     "02067e6a00000000000000000000000000000000000000000000000000000000000000c7";
 
@@ -148,9 +145,8 @@ fn bench_revm() -> Result<()> {
         "execute_contract_method_success_from_revm",
         || {
             let (r, _to, _g, _s, _logs) = evm.transact();
-            assert_matches!(
-                r,
-                Return::Return,
+            assert!(
+                matches!(r, Return::Return),
                 "REVM Method call should succeed: {:#?}",
                 r
             );
@@ -163,9 +159,8 @@ fn bench_revm() -> Result<()> {
         "execute_contract_method_reverted_from_revm",
         || {
             let (r, _to, _g, _s, _logs) = evm.transact();
-            assert_matches!(
-                r,
-                Return::Revert,
+            assert!(
+                matches!(r, Return::Revert),
                 "REVM Method call should revert, r: {:#?}",
                 r,
             );
