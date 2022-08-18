@@ -10,8 +10,8 @@ cargo run --release
 
 For each EVM, 
 * we'll create an external account and a contract account holding the contract `sample.sol`
-* call the `add(1)` method for 100_000 times
-* call the `add(0xc7)` method for 100_000 times
+* micro bench the `add(1)` method for 5 seconds
+* micro bench the `add(0xc7)` method for 5 seconds
 
 
 Sample results:
