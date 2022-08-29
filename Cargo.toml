@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-evm = { git = "https://github.com/cassc/evm", branch = "master" }
+evm = { git = "https://github.com/rust-blockchain/evm.git", branch = "master" }
 eyre = "0.6.8"
 hex = "0.4.3"
 primitive-types = { version = "0.11.1", features = ["scale-info"] }
 microbench = "0.5.0"
-revm = { version = "1.9.0", features = ["serde", "tokio", "hex", "k256", "with-serde"] }
+revm = { git = "https://github.com/bluealloy/revm.git", branch="forks", features = ["serde", "hex", "with-serde"] }
 bytes = "1.2.1"
 
 

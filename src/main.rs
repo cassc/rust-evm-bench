@@ -144,11 +144,11 @@ fn bench_revm() -> Result<()> {
         &bench_options,
         "execute_contract_method_success_from_revm",
         || {
-            let (r, _to, _g, _s, _logs) = evm.transact();
+            let (r,_) = evm.transact();
             assert!(
-                matches!(r, Return::Return),
+                matches!(r.exit_reason, Return::Return),
                 "REVM Method call should succeed: {:#?}",
-                r
+                r.exit_reason
             );
         },
     );
@@ -158,11 +158,11 @@ fn bench_revm() -> Result<()> {
         &bench_options,
         "execute_contract_method_reverted_from_revm",
         || {
-            let (r, _to, _g, _s, _logs) = evm.transact();
+            let (result,_) = evm.transact();
             assert!(
-                matches!(r, Return::Revert),
+                matches!(result.exit_reason, Return::Revert),
                 "REVM Method call should revert, r: {:#?}",
-                r,
+                result.exit_reason,
             );
         },
     );
