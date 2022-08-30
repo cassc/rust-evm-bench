@@ -5,9 +5,10 @@ use evm::Config;
 use eyre::Result;
 use microbench::{self, Options};
 use primitive_types::{H160, U256};
-use revm::{AccountInfo, Bytecode, InMemoryDB, Return, TransactTo};
+use revm::{AccountInfo, Bytecode, InMemoryDB, Return, TransactTo, LatestSpec};
 use std::collections::BTreeMap;
 use std::str::FromStr;
+use std::time::Duration;
 
 /// Contract address
 const OWNER_ADDR: &str = "0xf000000000000000000000000000000000000000";
@@ -21,6 +22,8 @@ const METHOD_SUCCESS_BIN: &str =
 /// sample.sol: add(0xc7)
 const METHOD_REVERT_BIN: &str =
     "02067e6a00000000000000000000000000000000000000000000000000000000000000c7";
+
+const TEST_DURATION : Duration = Duration::from_millis(1000);
 
 fn bench_rust_evm() -> Result<()> {
     let owner = H160::from_str(OWNER_ADDR)?;
@@ -70,7 +73,7 @@ fn bench_rust_evm() -> Result<()> {
     let method = hex::decode(METHOD_SUCCESS_BIN)?;
 
     // Microbenchmark
-    let bench_options = Options::default();
+    let bench_options = Options::default().time(TEST_DURATION);
     microbench::bench(
         &bench_options,
         "execute_contract_method_success_from_rust_evm",
@@ -130,25 +133,25 @@ fn bench_revm() -> Result<()> {
     db.insert_account_info(from, account);
 
     // Add contract account
-    let account = AccountInfo::new(U256::MAX, 0u64, Bytecode::new_raw(contract_bin));
+    let account = AccountInfo::new(U256::MAX, 0u64, Bytecode::new_raw(contract_bin).to_analysed::<LatestSpec>());
     db.insert_account_info(to, account);
 
     evm.database(db);
     evm.env.tx.caller = from;
     evm.env.tx.transact_to = TransactTo::Call(to);
 
-    let bench_options = Options::default();
+    let bench_options = Options::default().time(TEST_DURATION);
 
     evm.env.tx.data = hex::decode(METHOD_SUCCESS_BIN)?.into();
     microbench::bench(
         &bench_options,
         "execute_contract_method_success_from_revm",
         || {
-            let (r, _to, _g, _s, _logs) = evm.transact();
+            let (r,_) = evm.transact();
             assert!(
-                matches!(r, Return::Return),
+                matches!(r.exit_reason, Return::Return),
                 "REVM Method call should succeed: {:#?}",
-                r
+                r.exit_reason
             );
         },
     );
@@ -158,11 +161,11 @@ fn bench_revm() -> Result<()> {
         &bench_options,
         "execute_contract_method_reverted_from_revm",
         || {
-            let (r, _to, _g, _s, _logs) = evm.transact();
+            let (result,_) = evm.transact();
             assert!(
-                matches!(r, Return::Revert),
+                matches!(result.exit_reason, Return::Revert),
                 "REVM Method call should revert, r: {:#?}",
-                r,
+                result.exit_reason,
             );
         },
     );
