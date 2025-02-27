@@ -1,0 +1,15 @@
+[package]
+name = "rust-evm-bench"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+evm = { git = "https://github.com/rust-blockchain/evm.git", branch = "master" }
+jsontests = { git = "https://github.com/rust-blockchain/evm.git", branch = "master" }
+evm-precompile = { git = "https://github.com/rust-blockchain/evm.git", branch = "master" }
+primitive-types = { version = "0.12", default-features = false, features = ["rlp"] }
+eyre = "0.6.12"
+hex = { version = "0.4.3", features = ["serde"] }
+microbench = "0.5.0"
