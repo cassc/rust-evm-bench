@@ -3,6 +3,12 @@
 version = 4
 
 [[package]]
+name = "adler2"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
+
+[[package]]
 name = "alloy-eip2930"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -342,6 +348,9 @@ name = "bitflags"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8f68f53c83ab957f72c32642f3868eec03eb974d1fb82e453128456482613d36"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bitvec"
@@ -351,6 +360,7 @@ checksum = "1bc2832c24239b0141d5674bb9174f9d68a8b5b3f2753311927c172ca46f7e9c"
 dependencies = [
  "funty",
  "radium",
+ "serde",
  "tap",
  "wyz",
 ]
@@ -402,6 +412,9 @@ name = "bytes"
 version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f61dac84819c6588b558454b194026eb1f09c293b9036ae9b159e74e73ab6cf9"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "c-kzg"
@@ -525,6 +538,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280"
 dependencies = [
  "libc",
+]
+
+[[package]]
+name = "crc32fast"
+version = "1.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a97769d94ddab943e4510d138150169a2758b5ef3eb191a9ee688de3e23ef7b3"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -843,6 +865,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "flate2"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
+dependencies = [
+ "crc32fast",
+ "miniz_oxide",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -933,6 +965,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
 dependencies = [
  "foldhash",
+ "serde",
 ]
 
 [[package]]
@@ -1026,6 +1059,7 @@ checksum = "8c9c992b02b5b4c94ea26e32fe5bccb7aa7d9f390ab5c1221ff895bc7ea8b652"
 dependencies = [
  "equivalent",
  "hashbrown",
+ "serde",
 ]
 
 [[package]]
@@ -1183,6 +1217,15 @@ name = "microbench"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4c44e40aee4e6fd2f4257bb91e5948ce79285aeb949129448889cf2fbf6da0b"
+
+[[package]]
+name = "miniz_oxide"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e3e04debbb59698c15bacbb6d93584a8c0ca9cc3213cb423d31f760d8843ce5"
+dependencies = [
+ "adler2",
+]
 
 [[package]]
 name = "num"
@@ -1426,6 +1469,7 @@ dependencies = [
  "libc",
  "rand_chacha",
  "rand_core",
+ "serde",
 ]
 
 [[package]]
@@ -1465,7 +1509,7 @@ checksum = "2b15c43186be67a4fd63bee50d0303afffcef381492ebe2c5d87f324e1b8815c"
 [[package]]
 name = "revm"
 version = "20.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "revm-bytecode",
  "revm-context",
@@ -1486,25 +1530,30 @@ name = "revm-bench"
 version = "0.2.0"
 dependencies = [
  "eyre",
+ "flate2",
  "hex",
  "microbench",
  "revm",
+ "revm-statetest-types",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
 name = "revm-bytecode"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "bitvec",
  "revm-primitives",
  "revm-specification",
+ "serde",
 ]
 
 [[package]]
 name = "revm-context"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "auto_impl",
  "cfg-if",
@@ -1522,7 +1571,7 @@ dependencies = [
 [[package]]
 name = "revm-context-interface"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "alloy-eip2930",
  "alloy-eip7702",
@@ -1537,7 +1586,7 @@ dependencies = [
 [[package]]
 name = "revm-database"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "auto_impl",
  "revm-bytecode",
@@ -1549,17 +1598,18 @@ dependencies = [
 [[package]]
 name = "revm-database-interface"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "auto_impl",
  "revm-primitives",
  "revm-state",
+ "serde",
 ]
 
 [[package]]
 name = "revm-handler"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "auto_impl",
  "revm-bytecode",
@@ -1577,7 +1627,7 @@ dependencies = [
 [[package]]
 name = "revm-inspector"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "auto_impl",
  "revm-context",
@@ -1592,7 +1642,7 @@ dependencies = [
 [[package]]
 name = "revm-interpreter"
 version = "16.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "revm-bytecode",
  "revm-context-interface",
@@ -1604,7 +1654,7 @@ dependencies = [
 [[package]]
 name = "revm-precompile"
 version = "17.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "aurora-engine-modexp",
  "blst",
@@ -1625,7 +1675,7 @@ dependencies = [
 [[package]]
 name = "revm-primitives"
 version = "16.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "alloy-primitives",
 ]
@@ -1633,21 +1683,33 @@ dependencies = [
 [[package]]
 name = "revm-specification"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "enumn",
  "revm-primitives",
+ "serde",
 ]
 
 [[package]]
 name = "revm-state"
 version = "1.0.0-alpha.1"
-source = "git+https://github.com/bluealloy/revm.git?branch=main#1967753677ab6f394a5b77f9432ebb734488d927"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
 dependencies = [
  "bitflags",
  "revm-bytecode",
  "revm-primitives",
  "revm-specification",
+ "serde",
+]
+
+[[package]]
+name = "revm-statetest-types"
+version = "1.0.0-alpha.1"
+source = "git+https://github.com/bluealloy/revm.git?branch=main#23d0b401552a9da528a61a4ab9274fa33b7f75d4"
+dependencies = [
+ "revm",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -1912,6 +1974,7 @@ version = "1.0.139"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44f86c3acccc9c65b153fe1b85a3be07fe5515274ec9f0653b4a0875731c72a6"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "ryu",

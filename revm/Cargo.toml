@@ -8,5 +8,9 @@ edition = "2021"
 [dependencies]
 microbench = "0.5.0"
 revm = { git = "https://github.com/bluealloy/revm.git", branch="main" }
+revm-statetest-types  = { git = "https://github.com/bluealloy/revm.git", branch="main" }
 eyre = "0.6.12"
 hex = { version = "0.4.3", features = ["serde"] }
+serde_json = "1.0.139"
+serde = { version = "1.0.218", features = ["serde_derive"] }
+flate2 = "1.1.0"
