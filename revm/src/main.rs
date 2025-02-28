@@ -7,7 +7,7 @@ use revm::{
     state::{AccountInfo, Bytecode},
     Context, ExecuteEvm, MainBuilder, MainContext,
 };
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 /// Contract address
 const OWNER_ADDR: &str = "0xf000000000000000000000000000000000000000";
@@ -74,6 +74,7 @@ fn bench_revm() -> Result<()> {
     tx.data = hex::decode(METHOD_REVERT_BIN)?.into();
     let context = context.clone().with_tx(tx);
     let mut evm = context.build_mainnet();
+
     microbench::bench(
         &bench_options,
         "execute_contract_method_reverted_from_revm",
