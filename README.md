@@ -7,6 +7,8 @@ To run the benchmark,
 ``` bash
 # To run benchmark test for revm
 cargo run --release  --bin revm-bench
+# To run benchmark test for ERC20 and UniSwap transactions
+cargo run --release  --bin revm_real_txs
 
 # To run benchmark test for rust-evm
 cargo run --release  --bin rust-evm-bench
