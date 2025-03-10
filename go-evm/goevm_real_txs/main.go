@@ -48,6 +48,7 @@ func runBenchmark(iterations int, testFile string) {
 
 func main() {
 	const iterations = 10000
+	fmt.Printf("Running %d transactions for each test case\n", iterations)
 	runBenchmark(iterations, "../erc20.bench.input.json")
 	runBenchmark(iterations, "../uniswap.bench.input.json")
 }
