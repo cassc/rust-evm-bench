@@ -1,75 +1,57 @@
 use eyre::Result;
-use flate2::read::GzDecoder;
 use microbench::{self, Options};
 use revm::{
     context::TxEnv,
     database::InMemoryDB,
-    primitives::{keccak256, TxKind},
+    primitives::{hex::FromHex, Address, Bytes, TxKind, U256},
     state::{AccountInfo, Bytecode},
     Context, ExecuteEvm, MainBuilder, MainContext,
 };
-use revm_statetest_types::TestSuite;
-use std::{fs::File, io::BufReader, time::Duration};
+use std::time::{Duration, Instant};
 
 /// Contract address
+const OWNER_ADDR: &str = "0xf000000000000000000000000000000000000000";
+const CONTRACT_ADDR: &str = "0x0000000000000000000000000000000000000000";
+/// sample.sol: runtime binary compiled with solc 0.8.0
+const CONTRACT_BIN: &str = "608060405234801561001057600080fd5b506004361061002b5760003560e01c806302067e6a14610030575b600080fd5b61004a600480360381019061004591906100dd565b610060565b6040516100579190610175565b60405180910390f35b600060808260ff16106100a8576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040161009f90610155565b60405180910390fd5b8160008054906101000a900460ff166100c191906101a1565b9050919050565b6000813590506100d781610214565b92915050565b6000602082840312156100ef57600080fd5b60006100fd848285016100c8565b91505092915050565b6000610113600e83610190565b91507f6e20697320746f6f206c617267650000000000000000000000000000000000006000830152602082019050919050565b61014f816101d8565b82525050565b6000602082019050818103600083015261016e81610106565b9050919050565b600060208201905061018a6000830184610146565b92915050565b600082825260208201905092915050565b60006101ac826101d8565b91506101b7836101d8565b92508260ff038211156101cd576101cc6101e5565b5b828201905092915050565b600060ff82169050919050565b7f4e487b7100000000000000000000000000000000000000000000000000000000600052601160045260246000fd5b61021d816101d8565b811461022857600080fd5b5056fea2646970667358221220adf34242ee77b97aa044e069ebc15c434c1296636f349e726a9678ab019ab2f264736f6c63430008000033";
+/// sample.sol: add(1)
+const METHOD_SUCCESS_BIN: &str =
+    "02067e6a0000000000000000000000000000000000000000000000000000000000000001";
+
+/// sample.sol: add(0xc7)
+const METHOD_REVERT_BIN: &str =
+    "02067e6a00000000000000000000000000000000000000000000000000000000000000c7";
+
 const TEST_DURATION: Duration = Duration::from_millis(5000);
 
-fn bench_revm(input_json: &str) -> Result<()> {
-    let suite: TestSuite =
-        serde_json::from_reader(BufReader::new(GzDecoder::new(File::open(input_json)?)))?;
+fn bench_revm() -> Result<()> {
+    let from = Address::from_hex(OWNER_ADDR)?;
+    let to = Address::from_hex(CONTRACT_ADDR)?;
+
+    let bytecode = Bytecode::new_raw(Bytes::from(hex::decode(CONTRACT_BIN).unwrap()));
 
     let mut db = InMemoryDB::default();
 
-    let test = suite.0;
-    let test = test.first_key_value().unwrap().1;
+    // Add owner account
+    let account = AccountInfo {
+        balance: U256::MAX,
+        ..AccountInfo::default()
+    };
 
-    test.pre.iter().for_each(|(address, account)| {
-        let code = match account.code.len() > 2 {
-            true => Some(Bytecode::new_raw(account.code.clone())),
-            false => None,
-        };
+    db.insert_account_info(from, account);
 
-        let code_hash = keccak256(&account.code);
-        let account_info = AccountInfo {
-            nonce: account.nonce,
-            balance: account.balance,
-            code,
-            code_hash,
-        };
-        db.insert_account_info(*address, account_info);
-
-        account.storage.iter().for_each(|(key, val)| {
-            db.insert_account_storage(*address, *key, *val)
-                .expect("Insert storage failed")
-        });
-    });
-
-    let caller = test.transaction.sender.expect("Missing sender address");
-    let to = test.transaction.to.expect("Missing to address");
-    let data = test.transaction.data[0].clone();
-    let value = test.transaction.value[0];
-    let gas_price = test
-        .transaction
-        .gas_price
-        .map(|v| v.saturating_to::<u128>())
-        .unwrap_or_default();
+    // Add contract account
+    let account = AccountInfo::from_bytecode(bytecode);
+    db.insert_account_info(to, account);
 
     let tx = TxEnv {
-        caller,
-        data,
+        caller: from,
         kind: TxKind::Call(to),
-        value,
-        gas_price,
+        data: hex::decode(METHOD_SUCCESS_BIN)?.into(),
         ..TxEnv::default()
     };
 
-    let mut context = Context::mainnet().with_db(db).with_tx(tx.clone());
-    context.block.basefee = test
-        .env
-        .current_base_fee
-        .unwrap_or_default()
-        .saturating_to::<u64>();
-    context.block.gas_limit = test.env.current_gas_limit.saturating_to::<u64>();
+    let context = Context::mainnet().with_db(db).with_tx(tx.clone());
 
     let mut evm = context.clone().build_mainnet();
 
@@ -80,12 +62,28 @@ fn bench_revm(input_json: &str) -> Result<()> {
         "execute_contract_method_success_from_revm",
         || {
             let r = evm.transact_previous().unwrap();
-            let output = r.result.output().unwrap_or_default();
             assert!(
                 r.result.is_success(),
-                "REVM Method call should succeed: {:#?} \nOutput: {}",
-                r.result,
-                String::from_utf8_lossy(output),
+                "REVM Method call should succeed: {:#?}",
+                r.result
+            );
+        },
+    );
+
+    let mut tx = tx.clone();
+    tx.data = hex::decode(METHOD_REVERT_BIN)?.into();
+    let context = context.clone().with_tx(tx);
+    let mut evm = context.build_mainnet();
+
+    microbench::bench(
+        &bench_options,
+        "execute_contract_method_reverted_from_revm",
+        || {
+            let r = evm.transact_previous().unwrap();
+            assert!(
+                !r.result.is_success(),
+                "REVM Method call should revert, r: {:#?}",
+                r.result
             );
         },
     );
@@ -94,5 +92,5 @@ fn bench_revm(input_json: &str) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    bench_revm("head0xda45ec1c79dcb9cfa2b673f4376e5a2677a8b3b7.json.gz")
+    bench_revm()
 }
