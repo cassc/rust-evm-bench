@@ -1,3 +1,4 @@
+use clap::Parser;
 use eyre::Result;
 use microbench::{self, Options};
 use revm::{
@@ -10,10 +11,8 @@ use revm::{
 use revm_statetest_types::TestSuite;
 use std::{fs::File, io::BufReader, time::Duration};
 
-/// Contract address
-const TEST_DURATION: Duration = Duration::from_millis(5000);
-
-fn bench_revm(input_json: &str) -> Result<()> {
+fn bench_revm(input_json: &str, duration_millis: u64) -> Result<()> {
+    let test_duration = Duration::from_millis(duration_millis);
     let suite: TestSuite = serde_json::from_reader(BufReader::new(File::open(input_json)?))?;
 
     let mut db = InMemoryDB::default();
@@ -71,7 +70,7 @@ fn bench_revm(input_json: &str) -> Result<()> {
 
     let mut evm = context.clone().build_mainnet();
 
-    let bench_options = Options::default().time(TEST_DURATION);
+    let bench_options = Options::default().time(test_duration);
 
     microbench::bench(&bench_options, &format!("benchmark {}", input_json), || {
         let r = evm.transact_previous().unwrap();
@@ -87,7 +86,25 @@ fn bench_revm(input_json: &str) -> Result<()> {
     Ok(())
 }
 
+/// REVM Benchmark Runner
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Cli {
+    /// Path to the benchmark input JSON file
+    input_file: String,
+
+    /// Duration of the benchmark test in milliseconds
+    #[arg(short, long, default_value_t = 5000)]
+    test_duration_millis: u64,
+
+    /// Enable verbose output
+    #[arg(short, long)]
+    verbose: bool,
+}
+
 fn main() -> Result<()> {
-    bench_revm("erc20.bench.input.json")?;
-    bench_revm("uniswap.bench.input.json")
+    let args = Cli::parse();
+
+    bench_revm(&args.input_file, args.test_duration_millis)?;
+    Ok(())
 }

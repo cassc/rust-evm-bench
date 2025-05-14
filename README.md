@@ -1,5 +1,29 @@
 # Benchmark Rust EVM and REVM
 
+# Comparing REVM and Go-ethereum executor: ERC20 Transfer and UniSwap Swap
+
+Comparing the single thread performance of REVM and Go-ethereum executor, all states are kept in memory during the test.
+
+> You can also run the benchmark tests in docker using the prebuilt image [evm-benches](https://hub.docker.com/r/augustus/evm-benches)
+
+
+``` bash
+cargo run --release --locked  --bin revm_real_txs  -- -t 5000 erc20.bench.input.json
+cargo run --release --locked  --bin revm_real_txs  -- -t 5000 uniswap.bench.input.json
+
+benchmark erc20.bench.input.json (5.0s) ...       8_010.154 ns/iter (1.000 R²)
+benchmark uniswap.bench.input.json (5.1s) ...     175_011.400 ns/iter (1.000 R²)
+
+cd go-evm
+go run goevm_real_txs/main.go -n 10000 ../erc20.bench.input.json
+go run goevm_real_txs/main.go -n 10000 ../uniswap.bench.input.json
+
+Running 10000 transactions for each test case
+Benchmark ../erc20.bench.input.json     0.36 ms / transaction
+Benchmark ../uniswap.bench.input.json   2.13 ms / transaction
+```
+
+
 
 ## Simple transaction
 
@@ -47,23 +71,4 @@ Ran 10000 iterations of success test in 39.495276ms
 Average time per iteration: 3.949µs
 Ran 10000 iterations of revert test in 32.057048ms
 Average time per iteration: 3.205µs
-```
-
-## ERC20 Transfer and UniSwap Swap
-
-Run benchmark test for ERC20 and UniSwap transactions, only REVM and go-evm are compared.
-
-
-``` bash
-cargo run --release --locked  --bin revm_real_txs
-
-benchmark erc20.bench.input.json (5.0s) ...       8_010.154 ns/iter (1.000 R²)
-benchmark uniswap.bench.input.json (5.1s) ...     175_011.400 ns/iter (1.000 R²)
-
-cd go-evm
-go run main/main.go
-
-Running 10000 transactions for each test case
-Benchmark ../erc20.bench.input.json     0.36 ms / transaction
-Benchmark ../uniswap.bench.input.json   2.13 ms / transaction
 ```
