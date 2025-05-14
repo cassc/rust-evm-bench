@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/tests"
+	"github.com/urfave/cli/v2"
 )
 
 func runBenchmark(iterations int, testFile string) {
@@ -47,8 +48,32 @@ func runBenchmark(iterations int, testFile string) {
 }
 
 func main() {
-	const iterations = 10000
-	fmt.Printf("Running %d transactions for each test case\n", iterations)
-	runBenchmark(iterations, "../erc20.bench.input.json")
-	runBenchmark(iterations, "../uniswap.bench.input.json")
+	app := &cli.App{
+		Name:  "benchmark",
+		Usage: "Run blockchain transaction benchmarks",
+		Flags: []cli.Flag{
+			&cli.IntFlag{
+				Name:    "iterations",
+				Aliases: []string{"n"},
+				Value:   10000,
+				Usage:   "Number of iterations to run",
+			},
+		},
+		Action: func(c *cli.Context) error {
+			if c.NArg() < 1 {
+				return cli.Exit("Error: input JSON file path is required", 1)
+			}
+			jsonPath := c.Args().First()
+			iterations := c.Int("iterations")
+
+			fmt.Printf("Running %d transactions for each test case\n", iterations)
+			runBenchmark(iterations, jsonPath)
+			return nil
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }

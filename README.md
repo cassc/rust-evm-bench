@@ -55,13 +55,15 @@ Run benchmark test for ERC20 and UniSwap transactions, only REVM and go-evm are 
 
 
 ``` bash
-cargo run --release --locked  --bin revm_real_txs
+cargo run --release --locked  --bin revm_real_txs  -- -t 5000 erc20.bench.input.json
+cargo run --release --locked  --bin revm_real_txs  -- -t 5000 uniswap.bench.input.json
 
 benchmark erc20.bench.input.json (5.0s) ...       8_010.154 ns/iter (1.000 R²)
 benchmark uniswap.bench.input.json (5.1s) ...     175_011.400 ns/iter (1.000 R²)
 
 cd go-evm
-go run main/main.go
+go run goevm_real_txs/main.go -n 10000 ../erc20.bench.input.json
+go run goevm_real_txs/main.go -n 10000 ../uniswap.bench.input.json
 
 Running 10000 transactions for each test case
 Benchmark ../erc20.bench.input.json     0.36 ms / transaction
