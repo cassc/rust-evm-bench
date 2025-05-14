@@ -23,6 +23,7 @@ RUN mv target/release/revm_real_txs target/release/revm-bench
 FROM golang:latest AS go_builder
 WORKDIR /app
 RUN git clone --depth=1 https://github.com/cassc/rust-evm-bench .
+RUN git checkout support-std-test-json
 WORKDIR /app/go-evm
 RUN go build -o goevm-bench ./goevm_real_txs/
 
