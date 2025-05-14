@@ -1,0 +1,31 @@
+# - use a rust image to build the rust-evm-bench/
+# - git clone --depth=1 https://github.com/cassc/rust-evm-bench
+# - build
+#   ❯ cargo build --release --locked  --bin revm_real_txs
+# rename the binary to revm-bench
+
+
+# - usage a go build image
+# - git clone --depth=1 https://github.com/cassc/rust-evm-bench
+# - build
+#   cd go-evm ; go build -o goevm-bench ./goevm_real_txs/
+
+
+FROM rust:latest AS rust_builder
+WORKDIR /app
+# RUN git clone --depth=1 https://github.com/cassc/rust-evm-bench .
+RUN git clone https://github.com/cassc/rust-evm-bench .
+RUN git checkout support-std-test-json
+RUN cargo build --release --locked --bin revm_real_txs
+RUN mv target/release/revm_real_txs target/release/revm-bench
+
+
+FROM golang:latest AS go_builder
+WORKDIR /app
+RUN git clone --depth=1 https://github.com/cassc/rust-evm-bench .
+WORKDIR /app/go-evm
+RUN go build -o goevm-bench ./goevm_real_txs/
+
+FROM ubuntu:24.04
+COPY --from=rust_builder /app/target/release/revm-bench /usr/local/bin/
+COPY --from=go_builder /app/go-evm/goevm-bench /usr/local/bin/
